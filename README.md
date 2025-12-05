@@ -1,0 +1,182 @@
+# ChatApp - ChatGPT-like Application
+
+A full-stack production-quality application that mirrors ChatGPT's UX, built with FastAPI backend and React frontend.
+
+## Architecture
+
+- **Backend**: FastAPI (Python 3.11) with async PostgreSQL, Redis, Firebase Auth
+- **Frontend**: React + Vite + TypeScript with TailwindCSS and shadcn/ui
+- **Database**: PostgreSQL (Cloud SQL in production)
+- **Cache**: Redis (Cloud Memorystore in production)
+- **Auth**: Firebase Authentication
+- **Deployment**: Cloud Run (backend), Firebase Hosting or Cloud Run (frontend)
+- **CI/CD**: GitHub Actions + Cloud Build
+
+## Features
+
+- ✅ User authentication (Firebase Auth with Google + email/password)
+- ✅ ChatGPT-like chat interface
+- ✅ Conversation history and management
+- ✅ Safety layer (input/output validation - placeholder for Llama Guard)
+- ✅ Router logic (routes to specialist models: theory, code, math)
+- ✅ Rate limiting (Redis-based)
+- ✅ Observability (OpenTelemetry, Prometheus metrics)
+- ✅ Production-ready security (CORS, headers, JWT verification)
+
+## Project Structure
+
+```
+/app
+  /frontend          # React + Vite + TypeScript
+  /backend           # FastAPI application
+/infra               # Docker compose, Cloud Build configs
+/.github/workflows   # CI/CD pipelines
+```
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.11+
+- Node.js 20+
+- Docker and Docker Compose
+- PostgreSQL (or use Docker)
+- Redis (or use Docker)
+
+### Local Development
+
+1. **Clone and setup environment**:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+2. **Start infrastructure** (PostgreSQL, Redis):
+```bash
+docker-compose -f infra/docker-compose.dev.yml up -d postgres redis
+```
+
+3. **Backend setup**:
+```bash
+cd app/backend
+pip install -e ".[dev]"
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+4. **Frontend setup**:
+```bash
+cd app/frontend
+npm install
+npm run dev
+```
+
+5. **Access the application**:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Using Docker Compose (All Services)
+
+```bash
+docker-compose -f infra/docker-compose.dev.yml up
+```
+
+## Configuration
+
+See `.env.example` for all environment variables. Key settings:
+
+- **Firebase**: Set `FIREBASE_PROJECT_ID` and `FIREBASE_WEB_API_KEY`
+- **Database**: Configure PostgreSQL connection
+- **Redis**: Set `REDIS_URL`
+- **OpenRouter**: Set `OPENROUTER_API_KEY` for LLM inference
+- **Safety API**: Placeholder URL (replace with Llama Guard or custom API)
+
+## API Endpoints
+
+### Auth
+- `GET /api/v1/auth/me` - Get current user profile
+
+### Conversations
+- `GET /api/v1/conversations` - List conversations
+- `POST /api/v1/conversations` - Create conversation
+- `GET /api/v1/conversations/{id}` - Get conversation with messages
+- `PATCH /api/v1/conversations/{id}` - Update conversation
+- `DELETE /api/v1/conversations/{id}` - Delete conversation
+
+### Chat
+- `POST /api/v1/chat/send` - Send message and get response
+
+### Health & Admin
+- `GET /api/v1/healthz` - Health check
+- `GET /api/v1/admin/metrics` - Prometheus metrics
+- `GET /api/v1/admin/config` - Configuration (admin only)
+
+## Placeholders
+
+Current service integrations:
+
+- **LLM Inference**: Uses OpenRouter API via `app/backend/app/services/llm_client.py` - configure with `OPENROUTER_API_KEY`
+- **Safety API**: Replace `check()` in `app/backend/app/services/safety.py` with Llama Guard integration
+
+See TODO comments in the code for integration points.
+
+## Data Reference
+
+Prior data work is referenced at: `/mnt/data/298b_team2_data.py`
+
+## Testing
+
+### Backend
+```bash
+cd app/backend
+pytest
+```
+
+### Frontend
+```bash
+cd app/frontend
+npm test
+npm run test:e2e  # Playwright E2E tests
+```
+
+## Deployment
+
+### Backend to Cloud Run
+
+1. **Build and push image**:
+```bash
+gcloud builds submit --config app/backend/cloudbuild.yaml
+```
+
+2. **Or deploy directly**:
+```bash
+gcloud run deploy chatapp-backend --source app/backend
+```
+
+### Frontend
+
+Deploy to Firebase Hosting or Cloud Run (static site).
+
+## Security
+
+- Firebase JWT tokens verified on every request
+- CORS locked to frontend origin
+- Security headers (X-Content-Type-Options, X-Frame-Options, etc.)
+- Rate limiting (per user and per IP)
+- SQL injection protection (SQLAlchemy ORM)
+- Input/output safety checks
+
+## Observability
+
+- **Logging**: Structured JSON logs (Cloud Logging in production)
+- **Tracing**: OpenTelemetry → Cloud Trace
+- **Metrics**: Prometheus endpoint at `/api/v1/admin/metrics`
+
+## License
+
+MIT
+
+
+
+
