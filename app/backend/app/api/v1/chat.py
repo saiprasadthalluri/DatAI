@@ -399,3 +399,79 @@ async def send_chat_stream(
     
     return StreamingResponse(generate_stream(), media_type="text/event-stream")
 
+
+@router.post("/simple")
+async def simple_chat(
+    request: Request,
+    req: ChatRequest,
+    user = Depends(current_user),
+):
+    """
+    Simple stateless chat endpoint - no database required.
+    For demo/testing purposes when database is not available.
+    """
+    # Router: Decide which specialist model to use
+    router_decision = await router_decide(req.meta.model_dump(), req.message)
+    model_used = router_decision.get("model", "theory-specialist")
+    selected_model = req.meta.model or "auto"
+    
+    # Check if user is asking about the model identity
+    if is_model_inquiry(req.message):
+        answer = get_model_identity_response(model_used, selected_model)
+    else:
+        # Call LLM
+        llm_client = get_llm_client()
+        messages = [{"role": "user", "content": req.message}]
+        
+        result = await llm_client.chat_completion(
+            model_friendly_name=model_used,
+            messages=messages,
+            temperature=req.meta.temperature,
+            max_tokens=req.meta.max_tokens
+        )
+        answer = result["response"]
+    
+    return {
+        "assistant_message": answer,
+        "model": model_used,
+        "confidence": router_decision.get("confidence", 0.5)
+    }
+
+
+@router.post("/simple-stream")
+async def simple_chat_stream(
+    request: Request,
+    req: ChatRequest,
+    user = Depends(current_user),
+):
+    """
+    Simple stateless streaming chat - no database required.
+    """
+    router_decision = await router_decide(req.meta.model_dump(), req.message)
+    model_used = router_decision.get("model", "theory-specialist")
+    selected_model = req.meta.model or "auto"
+    
+    async def generate():
+        yield f"data: {json.dumps({'type': 'metadata', 'model': model_used})}\n\n"
+        
+        if is_model_inquiry(req.message):
+            answer = get_model_identity_response(model_used, selected_model)
+            for word in answer.split():
+                yield f"data: {json.dumps({'type': 'chunk', 'content': word + ' '})}\n\n"
+                await asyncio.sleep(0.02)
+        else:
+            llm_client = get_llm_client()
+            messages = [{"role": "user", "content": req.message}]
+            
+            async for chunk in llm_client.chat_completion_stream(
+                model_friendly_name=model_used,
+                messages=messages,
+                temperature=req.meta.temperature,
+                max_tokens=req.meta.max_tokens
+            ):
+                yield f"data: {json.dumps({'type': 'chunk', 'content': chunk})}\n\n"
+        
+        yield f"data: {json.dumps({'type': 'done'})}\n\n"
+    
+    return StreamingResponse(generate(), media_type="text/event-stream")
+

@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     postgres_db: str = "chatapp"
     postgres_user: str = "chatapp"
     postgres_password: str = "chatapp"
+    database_url_override: Optional[str] = None  # For Cloud SQL Unix socket
     
     # Redis
     redis_url: str = "redis://localhost:6379/0"
@@ -59,6 +60,15 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         """Construct database URL."""
+        # Use override if provided (for Cloud SQL Unix socket)
+        if self.database_url_override:
+            return self.database_url_override
+        # Check if postgres_host is a Unix socket path (starts with /)
+        if self.postgres_host.startswith("/"):
+            return (
+                f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+                f"@/{self.postgres_db}?host={self.postgres_host}"
+            )
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"

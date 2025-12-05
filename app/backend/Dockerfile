@@ -8,24 +8,25 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e .
-
-# Copy application code
+# Copy all application files first
 COPY ./app ./app
 COPY ./alembic ./alembic
 COPY ./alembic.ini ./
+COPY pyproject.toml ./
+
+# Install dependencies (not editable for production)
+RUN pip install --no-cache-dir .
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV PORT=8080
 
-# Expose port
-EXPOSE 8000
+# Expose port (Cloud Run uses 8080)
+EXPOSE 8080
 
-# Run migrations and start server
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Start server (skip migrations for now - run separately)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
 
 
 

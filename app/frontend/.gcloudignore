@@ -1,0 +1,8 @@
+﻿# Don't ignore dist - we need it for deployment
+!dist/
+
+# Ignore these
+node_modules/
+src/
+.git/
+*.md

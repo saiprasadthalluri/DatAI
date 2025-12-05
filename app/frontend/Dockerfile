@@ -1,22 +1,14 @@
-FROM node:20-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
 
-# Copy package files
-COPY package*.json ./
+# Copy custom config
+COPY default.conf /etc/nginx/conf.d/
 
-# Install dependencies
-RUN npm ci
+# Copy built files
+COPY dist /usr/share/nginx/html
 
-# Copy source code
-COPY . .
+EXPOSE 8080
 
-# Expose port
-EXPOSE 5173
-
-# Start dev server
-CMD ["npm", "run", "dev"]
-
-
-
-
+CMD ["nginx", "-g", "daemon off;"]

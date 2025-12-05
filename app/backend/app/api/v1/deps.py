@@ -1,26 +1,52 @@
 """API dependencies."""
+import os
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
+from typing import Optional, Union
+from uuid import UUID, uuid4
 from ...core.security import get_current_user
 from ...db.session import get_db
 from ...services.history import get_or_create_user
 from ...models import User
 
 
+class MockUser:
+    """Mock user for when database is not available."""
+    def __init__(self, firebase_user: dict):
+        from datetime import datetime
+        self.id = uuid4()
+        self.firebase_uid = firebase_user.get("uid", "dev-user")
+        self.email = firebase_user.get("email", "dev@example.com")
+        self.display_name = firebase_user.get("name", "Dev User")
+        self.avatar_url = firebase_user.get("picture")
+        self.is_admin = False
+        self.auth_provider = "dev"
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
+
+
 async def current_user(
     firebase_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
-) -> User:
+) -> Union[User, MockUser]:
     """Get current user from database (creates if doesn't exist)."""
-    user = await get_or_create_user(
-        db=db,
-        firebase_uid=firebase_user["uid"],
-        email=firebase_user.get("email", ""),
-        display_name=firebase_user.get("name"),
-        avatar_url=firebase_user.get("picture")
-    )
-    return user
+    try:
+        user = await get_or_create_user(
+            db=db,
+            firebase_uid=firebase_user["uid"],
+            email=firebase_user.get("email", ""),
+            display_name=firebase_user.get("name"),
+            avatar_url=firebase_user.get("picture")
+        )
+        return user
+    except Exception as e:
+        # If database is not available, return mock user in dev mode
+        if os.getenv("ENV") == "development":
+            return MockUser(firebase_user)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database not available"
+        )
 
 
 async def require_admin(
