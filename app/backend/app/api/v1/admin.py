@@ -27,15 +27,12 @@ async def get_config(admin: User = Depends(require_admin)):
     
     return {
         "router_strategy": settings.router_strategy,
-        "inference_provider": "OpenRouter",
-        "inference_base_url": settings.inference_base_url,
         "models": {
-            "theory": settings.model_theory,
-            "code": settings.model_code,
-            "math": settings.model_math,
-            "safety": settings.model_safety,
+            "theory": "theory-specialist",
+            "code": "code-specialist",
+            "math": "math-specialist",
         },
-        "safety_api": "Replicate/LlamaGuard" if settings.safety_api_key != "PLACEHOLDER" else "Not configured",
+        "safety_enabled": settings.safety_api_key != "PLACEHOLDER",
         "rate_limit_per_user": settings.rate_limit_per_user,
         "rate_limit_per_ip": settings.rate_limit_per_ip,
     }

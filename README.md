@@ -110,18 +110,11 @@ See `.env.example` for all environment variables. Key settings:
 - `GET /api/v1/admin/metrics` - Prometheus metrics
 - `GET /api/v1/admin/config` - Configuration (admin only)
 
-## Placeholders
+## Configuration
 
-Current service integrations:
-
-- **LLM Inference**: Uses OpenRouter API via `app/backend/app/services/llm_client.py` - configure with `OPENROUTER_API_KEY`
-- **Safety API**: Replace `check()` in `app/backend/app/services/safety.py` with Llama Guard integration
-
-See TODO comments in the code for integration points.
-
-## Data Reference
-
-Prior data work is referenced at: `/mnt/data/298b_team2_data.py`
+Configure environment variables for:
+- **LLM Inference**: Set `INFERENCE_BASE_URL` and `INFERENCE_API_KEY`
+- **Safety**: Set `SAFETY_API_KEY` for content moderation
 
 ## Testing
 

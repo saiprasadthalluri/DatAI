@@ -43,7 +43,7 @@ gcloud services enable \
 
 # Check/Create secrets
 echo "🔐 Setting up secrets..."
-for secret in openrouter-api-key db-password; do
+for secret in inference-api-key db-password; do
     if ! gcloud secrets describe $secret &>/dev/null; then
         echo "   Creating secret: $secret"
         read -sp "   Enter value for $secret: " value
@@ -73,7 +73,7 @@ gcloud run deploy chatapp-backend \
     --min-instances 0 \
     --max-instances 10 \
     --set-env-vars "ENV=production,PROJECT_ID=$PROJECT_ID,REGION=$REGION" \
-    --set-secrets "INFERENCE_API_KEY=openrouter-api-key:latest"
+    --set-secrets "INFERENCE_API_KEY=inference-api-key:latest"
 
 BACKEND_URL=$(gcloud run services describe chatapp-backend --region $REGION --format="value(status.url)")
 echo "✅ Backend deployed: $BACKEND_URL"

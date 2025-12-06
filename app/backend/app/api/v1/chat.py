@@ -29,10 +29,10 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 # Model name mapping for user-facing responses
 MODEL_DISPLAY_NAMES = {
-    "theory-specialist": "Qwen 2.5",
-    "math-specialist": "Qwen 2.5", 
-    "code-specialist": "Seed Coder",
-    "auto": "Qwen 2.5",
+    "theory-specialist": "DatAI",
+    "math-specialist": "DatAI", 
+    "code-specialist": "DatAI",
+    "auto": "DatAI",
 }
 
 
@@ -66,7 +66,7 @@ def is_model_inquiry(message: str) -> bool:
 def get_model_identity_response(model_used: str, selected_model: str) -> str:
     """Generate a response identifying the model being used."""
     # Use the selected model from request meta, or the routed model
-    display_name = MODEL_DISPLAY_NAMES.get(selected_model, MODEL_DISPLAY_NAMES.get(model_used, "Qwen 2.5"))
+    display_name = MODEL_DISPLAY_NAMES.get(selected_model, MODEL_DISPLAY_NAMES.get(model_used, "DatAI"))
     
     return f"I am {display_name}, an AI assistant here to help you with your questions. How can I assist you today?"
 
@@ -331,7 +331,7 @@ async def send_chat_stream(
                     yield f"data: {json.dumps({'type': 'chunk', 'content': word + ' '})}\n\n"
                     await asyncio.sleep(0.02)  # Small delay for natural feel
             else:
-                # Call OpenRouter LLM with streaming
+                # Call LLM with streaming
                 # Build messages list
                 messages = [{"role": "user", "content": req.message}]
                 

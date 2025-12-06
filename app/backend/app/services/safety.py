@@ -33,8 +33,8 @@ class LlamaGuardClient:
     def __init__(self):
         self.api_url = "https://api.replicate.com/v1/predictions"
         self.api_key = settings.safety_api_key
-        # LlamaGuard 3 8B model on Replicate
-        self.model_version = "meta/llama-guard-3-8b"
+        # Safety model on Replicate
+        self.model_version = settings.model_safety if hasattr(settings, 'model_safety') else "safety-model"
         self._enabled = self.api_key and self.api_key != "PLACEHOLDER"
     
     @property
@@ -226,10 +226,10 @@ class SafetyService:
 
     async def check_content(self, content: str) -> Dict[str, Any]:
         """
-        Check if content is safe using LLM client (OpenRouter).
+        Check if content is safe using LLM client.
         Falls back to Replicate if LLM client fails.
         """
-        # Try LLM client first (OpenRouter)
+        # Try LLM client first
         try:
             result = await self._llm_client.chat_completion(
                 model_friendly_name="safety-classifier",

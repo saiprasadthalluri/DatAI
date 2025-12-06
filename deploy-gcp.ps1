@@ -51,7 +51,7 @@ gcloud services enable `
 # Check if secrets exist, if not create them
 Write-Host "`n🔐 Setting up secrets..." -ForegroundColor Yellow
 
-$secrets = @("openrouter-api-key", "db-password")
+$secrets = @("inference-api-key", "db-password")
 foreach ($secret in $secrets) {
     $exists = gcloud secrets describe $secret 2>$null
     if (-not $exists) {
@@ -84,7 +84,7 @@ gcloud run deploy chatapp-backend `
     --min-instances 0 `
     --max-instances 10 `
     --set-env-vars "ENV=production,PROJECT_ID=$ProjectId,REGION=$Region" `
-    --set-secrets "INFERENCE_API_KEY=openrouter-api-key:latest"
+    --set-secrets "INFERENCE_API_KEY=inference-api-key:latest"
 
 # Get backend URL
 $backendUrl = gcloud run services describe chatapp-backend --region $Region --format="value(status.url)"

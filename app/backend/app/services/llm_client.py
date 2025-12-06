@@ -1,4 +1,4 @@
-"""LLM client wrapper - hides actual model details and API endpoints."""
+"""LLM client wrapper for inference API."""
 import logging
 from typing import Dict, Any, List, Optional, AsyncIterator
 from openai import AsyncOpenAI
@@ -10,20 +10,18 @@ logger = logging.getLogger(__name__)
 
 class LLMClient:
     """
-    Wrapper around OpenAI-compatible API (OpenRouter).
-    Hides the actual provider and model details.
+    Wrapper around OpenAI-compatible inference API.
     """
 
     def __init__(self):
-        # Use hidden API configuration
         self._client = AsyncOpenAI(
-            base_url=settings.inference_base_url,  # From hidden config
-            api_key=settings.inference_api_key,  # From hidden config
+            base_url=settings.inference_base_url,
+            api_key=settings.inference_api_key,
         )
-        self._model_registry = settings.model_registry  # Maps to hidden models
+        self._model_registry = settings.model_registry
 
     def get_model_id(self, friendly_name: str) -> str:
-        """Convert friendly name to actual model ID."""
+        """Convert friendly name to model ID."""
         if friendly_name not in self._model_registry:
             raise ValueError(f"Unknown model: {friendly_name}")
         return self._model_registry[friendly_name]
@@ -37,7 +35,6 @@ class LLMClient:
     ) -> Dict[str, Any]:
         """
         Run chat completion using friendly model name.
-        Returns response with friendly name (not actual model ID).
         """
         actual_model_id = self.get_model_id(model_friendly_name)
 
@@ -49,13 +46,12 @@ class LLMClient:
                 max_tokens=max_tokens,
             )
 
-            # Clean response: remove thinking/reasoning and markdown
             raw_response = response.choices[0].message.content or ""
             cleaned_response = clean_response(raw_response)
             
             return {
-                "model": model_friendly_name,  # Return friendly name!
-                "response": cleaned_response,  # Cleaned response without markdown
+                "model": model_friendly_name,
+                "response": cleaned_response,
                 "usage": {
                     "prompt_tokens": response.usage.prompt_tokens,
                     "completion_tokens": response.usage.completion_tokens,
@@ -75,8 +71,6 @@ class LLMClient:
     ) -> AsyncIterator[str]:
         """
         Stream chat completion using friendly model name.
-        Yields chunks of the response text.
-        Filters out thinking/reasoning tags in real-time.
         """
         actual_model_id = self.get_model_id(model_friendly_name)
 
@@ -89,7 +83,6 @@ class LLMClient:
                 stream=True,
             )
 
-            # State for tracking thinking tags
             in_thinking = False
             buffer = ""
             thinking_tags = ['<think>', '<thinking>', '<reasoning>', '<thought>', '<internal>']
@@ -100,13 +93,10 @@ class LLMClient:
                     content = chunk.choices[0].delta.content
                     buffer += content
                     
-                    # Check for thinking tag starts
                     for tag in thinking_tags:
                         if tag in buffer.lower():
                             in_thinking = True
-                            # Remove everything from start of tag
                             tag_pos = buffer.lower().find(tag)
-                            # Yield content before the tag
                             before_tag = buffer[:tag_pos]
                             if before_tag:
                                 cleaned = self._clean_chunk(before_tag)
@@ -115,18 +105,14 @@ class LLMClient:
                             buffer = buffer[tag_pos:]
                             break
                     
-                    # Check for thinking tag ends
                     for tag in closing_tags:
                         if tag in buffer.lower():
                             in_thinking = False
-                            # Skip everything up to and including closing tag
                             tag_pos = buffer.lower().find(tag) + len(tag)
                             buffer = buffer[tag_pos:]
                             break
                     
-                    # If not in thinking, yield buffered content
                     if not in_thinking and buffer:
-                        # Only yield if we don't have partial tags
                         has_partial_tag = any(
                             buffer.lower().endswith(tag[:i]) 
                             for tag in thinking_tags + closing_tags 
@@ -138,7 +124,6 @@ class LLMClient:
                                 yield cleaned
                             buffer = ""
             
-            # Yield any remaining buffer (if not in thinking)
             if buffer and not in_thinking:
                 cleaned = self._clean_chunk(buffer)
                 if cleaned:
@@ -149,8 +134,7 @@ class LLMClient:
             raise
     
     def _clean_chunk(self, content: str) -> str:
-        """Clean a chunk of text - remove markdown characters."""
-        # Remove common markdown characters
+        """Clean a chunk of text."""
         cleaned = content.replace('**', '').replace('*', '').replace('#', '').replace('`', '').replace('__', '')
         return cleaned
 
@@ -159,7 +143,6 @@ class LLMClient:
         return [k for k in self._model_registry.keys() if k != "safety-classifier"]
 
 
-# Singleton instance
 _client: Optional[LLMClient] = None
 
 
@@ -169,4 +152,3 @@ def get_llm_client() -> LLMClient:
     if _client is None:
         _client = LLMClient()
     return _client
-

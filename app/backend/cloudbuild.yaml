@@ -45,7 +45,7 @@ steps:
       - '--set-env-vars'
       - 'ENV=production,PROJECT_ID=$PROJECT_ID,REGION=us-central1'
       - '--set-secrets'
-      - 'POSTGRES_PASSWORD=db-password:latest,INFERENCE_API_KEY=openrouter-api-key:latest'
+      - 'POSTGRES_PASSWORD=db-password:latest,INFERENCE_API_KEY=inference-api-key:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/chatapp-backend:$SHORT_SHA'
