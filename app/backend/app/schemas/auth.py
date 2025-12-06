@@ -14,6 +14,7 @@ class UserProfile(BaseSchema):
     avatar_url: Optional[str] = None
     auth_provider: str
     is_admin: bool
+    email_verified: bool = False
     created_at: datetime
     updated_at: datetime
 

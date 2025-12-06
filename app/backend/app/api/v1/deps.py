@@ -7,45 +7,56 @@ from uuid import UUID, uuid4
 from ...core.security import get_current_user
 from ...db.session import get_db
 from ...services.history import get_or_create_user
+from ...services.auth import get_user_by_id
 from ...models import User
 
 
 class MockUser:
     """Mock user for when database is not available."""
-    def __init__(self, firebase_user: dict):
+    def __init__(self, token_user: dict):
         from datetime import datetime
         self.id = uuid4()
-        self.firebase_uid = firebase_user.get("uid", "dev-user")
-        self.email = firebase_user.get("email", "dev@example.com")
-        self.display_name = firebase_user.get("name", "Dev User")
-        self.avatar_url = firebase_user.get("picture")
+        self.firebase_uid = token_user.get("uid", "dev-user")
+        self.email = token_user.get("email", "dev@example.com")
+        self.display_name = token_user.get("name", "Dev User")
+        self.avatar_url = token_user.get("picture")
         self.is_admin = False
-        self.auth_provider = "dev"
+        self.auth_provider = token_user.get("auth_type", "dev")
+        self.email_verified = token_user.get("email_verified", False)
         self.created_at = datetime.utcnow()
         self.updated_at = datetime.utcnow()
 
 
 async def current_user(
-    firebase_user: dict = Depends(get_current_user),
+    token_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ) -> Union[User, MockUser]:
     """Get current user from database (creates if doesn't exist)."""
     try:
+        auth_type = token_user.get("auth_type", "")
+        
+        # For JWT auth, get user directly by ID
+        if auth_type == "jwt":
+            user = await get_user_by_id(db, token_user["uid"])
+            if user:
+                return user
+        
+        # For Firebase or dev auth, use get_or_create
         user = await get_or_create_user(
             db=db,
-            firebase_uid=firebase_user["uid"],
-            email=firebase_user.get("email", ""),
-            display_name=firebase_user.get("name"),
-            avatar_url=firebase_user.get("picture")
+            firebase_uid=token_user["uid"],
+            email=token_user.get("email", ""),
+            display_name=token_user.get("name"),
+            avatar_url=token_user.get("picture")
         )
         return user
     except Exception as e:
         # If database is not available, return mock user in dev mode
         if os.getenv("ENV") == "development":
-            return MockUser(firebase_user)
+            return MockUser(token_user)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database not available"
+            detail=f"Database not available: {str(e)}"
         )
 
 

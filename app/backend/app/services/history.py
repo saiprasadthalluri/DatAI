@@ -18,21 +18,56 @@ async def get_or_create_user(
     avatar_url: Optional[str] = None
 ) -> User:
     """Get or create user from Firebase auth data."""
+    # First try to find by firebase_uid (preferred)
+    if firebase_uid:
+        result = await db.execute(
+            select(User).where(User.firebase_uid == firebase_uid)
+        )
+        user = result.scalar_one_or_none()
+        if user:
+            # Update user info if changed
+            updated = False
+            if email and user.email != email:
+                user.email = email
+                updated = True
+            if display_name and user.display_name != display_name:
+                user.display_name = display_name
+                updated = True
+            if avatar_url and user.avatar_url != avatar_url:
+                user.avatar_url = avatar_url
+                updated = True
+            if updated:
+                user.updated_at = datetime.utcnow()
+                await db.commit()
+                await db.refresh(user)
+            return user
+    
+    # Fallback: find by email (for migration from old users without firebase_uid)
     result = await db.execute(
         select(User).where(User.email == email)
     )
     user = result.scalar_one_or_none()
     
-    if not user:
-        user = User(
-            email=email,
-            display_name=display_name,
-            avatar_url=avatar_url,
-            auth_provider="firebase"
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    if user:
+        # Update existing user with firebase_uid
+        if firebase_uid and not user.firebase_uid:
+            user.firebase_uid = firebase_uid
+            user.updated_at = datetime.utcnow()
+            await db.commit()
+            await db.refresh(user)
+        return user
+    
+    # Create new user
+    user = User(
+        firebase_uid=firebase_uid,
+        email=email,
+        display_name=display_name,
+        avatar_url=avatar_url,
+        auth_provider="firebase"
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
     
     return user
 

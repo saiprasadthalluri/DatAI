@@ -13,6 +13,7 @@ COPY ./app ./app
 COPY ./alembic ./alembic
 COPY ./alembic.ini ./
 COPY pyproject.toml ./
+COPY ./add_columns.py ./
 
 # Install dependencies (not editable for production)
 RUN pip install --no-cache-dir .
