@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { auth, isDevMode } from '@/lib/firebase'
+import { auth, isDevMode, isBackendAuth } from '@/lib/firebase'
 import Button from '@/components/Button'
 import Input from '@/components/Input'
 import Logo from '@/components/Logo'
@@ -37,9 +37,11 @@ export default function SignupPage() {
     }
 
     try {
-      if (isDevMode) {
-        await auth.createUserWithEmailAndPassword(email.trim(), password)
+      if (isDevMode || isBackendAuth) {
+        // Use auth object's method directly (dev mode or backend auth)
+        await auth.createUserWithEmailAndPassword(email.trim(), password, displayName.trim() || undefined)
       } else {
+        // Use Firebase Auth
         const { createUserWithEmailAndPassword } = await import('firebase/auth')
         await createUserWithEmailAndPassword(auth, email.trim(), password)
       }
@@ -56,9 +58,9 @@ export default function SignupPage() {
     setError('')
 
     try {
-      if (isDevMode) {
-        // In dev mode, show error that Google sign-in requires Firebase
-        setError('Google sign-in requires Firebase configuration. Please use email/password sign-up in development mode, or configure Firebase for production.')
+      if (isDevMode || isBackendAuth) {
+        // Dev mode or backend auth doesn't support Google sign-in
+        setError('Google sign-in is not available. Please use email/password sign-up.')
         setLoading(false)
         return
       } else {
@@ -163,10 +165,10 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* Google Sign Up */}
-            {isDevMode ? (
+            {/* Google Sign Up - only show if using Firebase auth */}
+            {(isDevMode || isBackendAuth) ? (
               <div className="p-3 rounded-lg bg-muted/50 border border-border/50 text-sm text-muted-foreground text-center">
-                Google sign-in requires Firebase configuration. Use email/password in dev mode.
+                Sign up with email and password above.
               </div>
             ) : (
               <Button
