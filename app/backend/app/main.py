@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app
 app = FastAPI(
     title="ChatApp API",
-    description="ChatGPT-like application backend",
+    description="Dat.AI - Data Science Domain Expert API",
     version="1.0.0",
     lifespan=lifespan
 )
