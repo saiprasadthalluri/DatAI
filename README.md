@@ -1,6 +1,6 @@
-# ChatApp - ChatGPT-like Application
+# DatAI - Data Science Domain Expert
 
-A full-stack production-quality application that mirrors ChatGPT's UX, built with FastAPI backend and React frontend.
+A full-stack production-quality domain expert application, built with FastAPI backend and React frontend.
 
 ## Architecture
 
@@ -15,9 +15,9 @@ A full-stack production-quality application that mirrors ChatGPT's UX, built wit
 ## Features
 
 - ✅ User authentication (Firebase Auth with Google + email/password)
-- ✅ ChatGPT-like chat interface
+- ✅ Chat interface
 - ✅ Conversation history and management
-- ✅ Safety layer (input/output validation - placeholder for Llama Guard)
+- ✅ Safety layer (Llama Guard)
 - ✅ Router logic (routes to specialist models: theory, code, math)
 - ✅ Rate limiting (Redis-based)
 - ✅ Observability (OpenTelemetry, Prometheus metrics)
@@ -72,9 +72,9 @@ npm run dev
 ```
 
 5. **Access the application**:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+- Frontend: https://chatapp-frontend-301170991982.us-central1.run.app 
+- Backend API: https://chatapp-backend-301170991982.us-central1.run.app
+- API Docs: https://chatapp-backend-301170991982.us-central1.run.app/docs
 
 ### Using Docker Compose (All Services)
 
@@ -88,9 +88,7 @@ See `.env.example` for all environment variables. Key settings:
 
 - **Firebase**: Set `FIREBASE_PROJECT_ID` and `FIREBASE_WEB_API_KEY`
 - **Database**: Configure PostgreSQL connection
-- **Redis**: Set `REDIS_URL`
-- **OpenRouter**: Set `OPENROUTER_API_KEY` for LLM inference
-- **Safety API**: Placeholder URL (replace with Llama Guard or custom API)
+- **Safety API**: llamaguard API
 
 ## API Endpoints
 
@@ -142,7 +140,7 @@ npm run test:e2e  # Playwright E2E tests
 
 ## Deployment
 
-### Backend to Cloud Run
+### Backend to Google Cloud Run
 
 1. **Build and push image**:
 ```bash
@@ -156,7 +154,7 @@ gcloud run deploy chatapp-backend --source app/backend
 
 ### Frontend
 
-Deploy to Firebase Hosting or Cloud Run (static site).
+Deploy Google Cloud Run (static site).
 
 ## Security
 
