@@ -9,7 +9,7 @@ A full-stack production-quality domain expert application, built with FastAPI ba
 - **Database**: PostgreSQL (Cloud SQL in production)
 - **Cache**: Redis (Cloud Memorystore in production)
 - **Auth**: Firebase Authentication
-- **Deployment**: Cloud Run (backend), Firebase Hosting or Cloud Run (frontend)
+- **Deployment**: Google Cloud Run (backend), Google Cloud Run (frontend)
 - **CI/CD**: GitHub Actions + Cloud Build
 
 ## Features
