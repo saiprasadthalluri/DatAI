@@ -23,6 +23,14 @@ A full-stack production-quality domain expert application, built with FastAPI ba
 - ✅ Observability (OpenTelemetry, Prometheus metrics)
 - ✅ Production-ready security (CORS, headers, JWT verification)
 
+## Selected Models
+
+We divided data science questions broadly into 3 categories i.e Theory, Code and Math. Tested more than 15 models for each category on benchmark datasets and selected one model for each category 
+
+- **Teory**: Qwen2.5-7B-Instruct Model
+- **Code**: Seedcoder-8B-Instruct Model
+- **Math**: Qwen2.5-7B-math-Instruct Model
+
 ## Project Structure
 
 ```
