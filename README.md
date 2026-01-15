@@ -41,6 +41,22 @@ We divided data science questions broadly into 3 categories i.e Theory, Code and
 /.github/workflows   # CI/CD pipelines
 ```
 
+## Website Screenshots
+<img width="922" height="505" alt="signup" src="https://github.com/user-attachments/assets/918cb0d5-452b-4966-a495-875f84d0ec85" />
+
+<img width="959" height="513" alt="homepage" src="https://github.com/user-attachments/assets/57c63a55-f815-445d-a5ef-17172f8fec9d" />
+
+<img width="932" height="488" alt="chat" src="https://github.com/user-attachments/assets/ab834e04-acb9-4e1b-869c-4bba9aa229f4" />
+
+<img width="959" height="500" alt="security barrier" src="https://github.com/user-attachments/assets/41987dfe-4d75-4cba-b84e-ddf4830e7974" />
+
+## Demo Video
+
+
+
+
+
+
 ## Quick Start
 
 ### Prerequisites
